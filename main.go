@@ -19,15 +19,16 @@ type Slack struct {
 // Config contains all the necessary configs for a
 // zenbot instance.
 type Config struct {
-	Slack *Slack
-	Debug bool
-	Log   *log.Log
+	Slack           *Slack
+	Debug           bool
+	Log             *log.Log
+	TimeoutDuration time.Duration
 }
 
 // A zen is a zen time period for a user
 type Zen struct {
 	User, Name, Channel, Reason string
-	EndsAt                      time.Time
+	EndsAt, Timeout             time.Time
 }
 
 // A Bot is an instance of zenbot.
@@ -139,6 +140,7 @@ func (b *Bot) startZen(ev *slack.MessageEvent) {
 		Channel: ev.Channel,
 		Reason:  reason,
 		EndsAt:  time.Now().Add(duration),
+		Timeout: time.Now(),
 	}
 
 	b.zensMutex.Lock()
@@ -153,8 +155,9 @@ func (b *Bot) enforceZen(user string) {
 	defer b.zensMutex.RUnlock()
 
 	for _, zen := range b.zens {
-		if zen.User == user {
+		if zen.User == user && time.Now().After(zen.Timeout) {
 			b.SendMessage(fmt.Sprintf("%s-- for interrupting your zen period (%s).", zen.Name, zen.Reason), zen.Channel)
+			zen.Timeout = time.Now().Add(b.Config.TimeoutDuration)
 			break
 		}
 	}
@@ -181,7 +184,6 @@ func (b *Bot) ExpireZens() {
 					b.zens = append(b.zens[:i], b.zens[i+1:]...)
 					b.zensMutex.Unlock()
 
-					//b.SendMessage(fmt.Sprintf("%s: your zen (%s) has ended. Be free!", zen.Name, zen.Reason), zen.Channel)
 					b.SendMessage(fmt.Sprintf("%s: Be free! For you zen (%s) has ended!", zen.Name, zen.Reason), zen.Channel)
 
 					b.zensMutex.RLock()

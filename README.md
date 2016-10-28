@@ -34,6 +34,7 @@ zenbot is a Slack bot that enforces users to have silent periods in which they a
 | ----------------------- | --------- | ---------------------------------------- | -------------- |
 | `-token string`         | **yes**   | slack RTM token                          |                |
 | `-debug=bool`           | no        | set debug mode                           | `false`        |
+| `-timeout string`           | no        | timeout between karma operations                           | `10s`        |
 
 In addition, see the table below for the options related to the web UI.
 

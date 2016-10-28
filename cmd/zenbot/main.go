@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"time"
 
 	"github.com/kamaln7/zenbot"
 
@@ -10,14 +11,19 @@ import (
 )
 
 var (
-	token = flag.String("token", "", "slack RTM token")
-	debug = flag.Bool("debug", false, "toggle debug")
+	token   = flag.String("token", "", "slack RTM token")
+	debug   = flag.Bool("debug", false, "toggle debug")
+	timeout = flag.String("timeout", "10s", "timeout between karma operations")
 )
 
 func main() {
 	log.Info("starting zenbot")
 
 	flag.Parse()
+	timeoutDuration, err := time.ParseDuration(*timeout)
+	if err != nil {
+		log.KV("timeout", *timeout).Err(err).Fatal("could not parse timeout duration")
+	}
 
 	sc := &zenbot.Slack{
 		Bot: slack.New(*token),
@@ -29,9 +35,10 @@ func main() {
 
 	bot := &zenbot.Bot{
 		Config: &zenbot.Config{
-			Slack: sc,
-			Log:   log.KV("zenbot", "true"),
-			Debug: *debug,
+			Slack:           sc,
+			Log:             log.KV("zenbot", "true"),
+			Debug:           *debug,
+			TimeoutDuration: timeoutDuration,
 		},
 	}
 
