@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"time"
 
 	"github.com/kamaln7/zenbot"
@@ -17,7 +18,7 @@ var (
 )
 
 func main() {
-	log.Info("starting zenbot")
+	log.Info(fmt.Sprintf("starting zenbot v%s", zenbot.Version))
 
 	flag.Parse()
 	timeoutDuration, err := time.ParseDuration(*timeout)

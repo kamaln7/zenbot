@@ -25,7 +25,7 @@ type Config struct {
 	TimeoutDuration time.Duration
 }
 
-// A zen is a zen time period for a user
+// A Zen is a zen time period for a user
 type Zen struct {
 	User, Name, Channel, Reason string
 	EndsAt, Timeout             time.Time
