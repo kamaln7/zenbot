@@ -68,19 +68,19 @@ func (b *Bot) Zen() {
 				b.Config.Log.Fatal("invalid slack token")
 			// user activity events
 			case *slack.UserTypingEvent:
-				b.enforceZen(ev.User)
+				b.enforceZen(ev.User, "typing")
 			case *slack.ReactionAddedEvent:
-				b.enforceZen(ev.User)
+				b.enforceZen(ev.User, "using reactjis")
 			case *slack.ReactionRemovedEvent:
-				b.enforceZen(ev.User)
+				b.enforceZen(ev.User, "using reactjis")
 			case *slack.StarRemovedEvent:
-				b.enforceZen(ev.User)
+				b.enforceZen(ev.User, "starring messages")
 			case *slack.StarAddedEvent:
-				b.enforceZen(ev.User)
+				b.enforceZen(ev.User, "starring messages")
 			case *slack.PinRemovedEvent:
-				b.enforceZen(ev.User)
+				b.enforceZen(ev.User, "pinning messages")
 			case *slack.PinAddedEvent:
-				b.enforceZen(ev.User)
+				b.enforceZen(ev.User, "pinning messages")
 			default:
 			}
 		}
@@ -150,13 +150,13 @@ func (b *Bot) startZen(ev *slack.MessageEvent) {
 	b.SendMessage(fmt.Sprintf("Added a zen for %s (%s), ends at [%s].", durationString, reason, zen.EndsAt), ev.Channel)
 }
 
-func (b *Bot) enforceZen(user string) {
+func (b *Bot) enforceZen(user, activity string) {
 	b.zensMutex.RLock()
 	defer b.zensMutex.RUnlock()
 
 	for _, zen := range b.zens {
 		if zen.User == user && time.Now().After(zen.Timeout) {
-			b.SendMessage(fmt.Sprintf("%s-- for interrupting your zen period (%s).", zen.Name, zen.Reason), zen.Channel)
+			b.SendMessage(fmt.Sprintf("%s-- for %s during your zen period (%s).", zen.Name, activity, zen.Reason), zen.Channel)
 			zen.Timeout = time.Now().Add(b.Config.TimeoutDuration)
 			break
 		}
@@ -184,7 +184,7 @@ func (b *Bot) ExpireZens() {
 					b.zens = append(b.zens[:i], b.zens[i+1:]...)
 					b.zensMutex.Unlock()
 
-					b.SendMessage(fmt.Sprintf("%s: Be free! For you zen (%s) has ended!", zen.Name, zen.Reason), zen.Channel)
+					b.SendMessage(fmt.Sprintf("%s: Be free, for you zen (%s) has ended!", zen.Name, zen.Reason), zen.Channel)
 
 					b.zensMutex.RLock()
 				}
