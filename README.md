@@ -42,6 +42,10 @@ In addition, see the table below for the options related to the web UI.
 
 It is recommended to pass zenbot's logs through [humanlog](https://github.com/aybabtme/humanlog). humanlog will format and color the JSON output as nice easy-to-read text.
 
+## Other
+
+A systemd service unit file is available [here](/zenbot.service). Edit the service file and replace `xoxb-abcdefg` with your Slack RTM token and install it as usual.
+
 ## License
 
 see [./LICENSE](/LICENSE)

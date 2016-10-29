@@ -1,0 +1,14 @@
+[Unit]
+Description=zenbot for Slack
+After=network-online.target
+
+[Service]
+Restart=on-failure
+
+User=nobody
+Group=nogroup
+
+ExecStart=/usr/local/bin/zenbot -token xoxb-abcdefg
+
+[Install]
+WantedBy=multi-user.target
