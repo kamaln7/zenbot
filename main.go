@@ -68,19 +68,19 @@ func (b *Bot) Zen() {
 				b.Config.Log.Fatal("invalid slack token")
 			// user activity events
 			case *slack.UserTypingEvent:
-				b.enforceZen(ev.User, "typing")
+				go b.enforceZen(ev.User, "typing")
 			case *slack.ReactionAddedEvent:
-				b.enforceZen(ev.User, "using reactjis")
+				go b.enforceZen(ev.User, "using reactjis")
 			case *slack.ReactionRemovedEvent:
-				b.enforceZen(ev.User, "using reactjis")
+				go b.enforceZen(ev.User, "using reactjis")
 			case *slack.StarRemovedEvent:
-				b.enforceZen(ev.User, "starring messages")
+				go b.enforceZen(ev.User, "starring messages")
 			case *slack.StarAddedEvent:
-				b.enforceZen(ev.User, "starring messages")
+				go b.enforceZen(ev.User, "starring messages")
 			case *slack.PinRemovedEvent:
-				b.enforceZen(ev.User, "pinning messages")
+				go b.enforceZen(ev.User, "pinning messages")
 			case *slack.PinAddedEvent:
-				b.enforceZen(ev.User, "pinning messages")
+				go b.enforceZen(ev.User, "pinning messages")
 			default:
 			}
 		}
@@ -108,11 +108,8 @@ func (b *Bot) handleMessageEvent(ev *slack.MessageEvent) {
 		return
 	}
 
-	switch {
-	case regexps.Zen.MatchString(ev.Text):
+	if regexps.Zen.MatchString(ev.Text) {
 		b.startZen(ev)
-
-	default:
 	}
 }
 
@@ -134,6 +131,7 @@ func (b *Bot) startZen(ev *slack.MessageEvent) {
 	if b.handleError(err, ev.Channel) {
 		return
 	}
+
 	zen := &Zen{
 		User:    ev.User,
 		Name:    name,
