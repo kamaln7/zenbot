@@ -2,7 +2,7 @@
 
 [![Build Status](https://semaphoreci.com/api/v1/kamaln7/zenbot/branches/master/badge.svg)](https://semaphoreci.com/kamaln7/zenbot)
 
-zenbot is a Slack bot that enforces users to have silent periods in which they are reprimanded for offending. Currently, the only available action is giving negative [karmabot](https://github.com/kamaln7/karmabot) karma points.
+zenbot is a Slack bot that enforces "zen periods" for users, during which they are reprimanded for using Slack. Currently, the only available action is giving negative [karmabot](https://github.com/kamaln7/karmabot) karma points.
 
 ## Syntax
 
@@ -17,8 +17,8 @@ zenbot is a Slack bot that enforces users to have silent periods in which they a
 2. run `go get` and then `go build` inside `cmd/zenbot`
     1. `cd zenbot`
     2. `go get`
-    1. `cd cmd/zenbot`
-    3. `go build`
+    3. `cd cmd/zenbot`
+    4. `go build`
 
 ### Download a Pre-built Release
 
@@ -26,21 +26,21 @@ zenbot is a Slack bot that enforces users to have silent periods in which they a
 
 ## Usage
 
-1. add a **Slack Bot** integration: `https://team.slack.com/apps/A0F7YS25R-bots` 
+1. add a **Slack Bot** integration: `https://team.slack.com/apps/A0F7YS25R-bots`. An avatar is available [here](/avatar.png).
 2. invite `zenbot` to any existing channels and all future channels (this is a limitation of Slack's bot API, unfortunately)
 3. run `zenbot`. the following options are supported:
 
-| option                  | required? | description                              | default        |
-| ----------------------- | --------- | ---------------------------------------- | -------------- |
-| `-token string`         | **yes**   | slack RTM token                          |                |
-| `-debug=bool`           | no        | set debug mode                           | `false`        |
-| `-timeout string`           | no        | timeout between karma operations                           | `10s`        |
+| option            | required? | description                              | default |
+| ----------------- | --------- | ---------------------------------------- | ------- |
+| `-token string`   | **yes**   | slack RTM token                          |         |
+| `-debug=bool`     | no        | set debug mode                           | `false` |
+| `-timeout string` | no        | timeout between actions (karma downvotes) | `10s`   |
 
 In addition, see the table below for the options related to the web UI.
 
-**example:** `./karmabot -token xoxb-abcdefg`
+**example:** `./zenbot -token xoxb-abcdefg`
 
-I recommend passing zenbot's logs through [humanlog](https://github.com/aybabtme/humanlog). humanlog will format and color the JSON output as nice easy-to-read text.
+It is recommended to pass zenbot's logs through [humanlog](https://github.com/aybabtme/humanlog). humanlog will format and color the JSON output as nice easy-to-read text.
 
 ## License
 
