@@ -18,7 +18,7 @@ var (
 )
 
 func main() {
-	log.Info(fmt.Sprintf("starting zenbot v%s", zenbot.Version))
+	log.Info(fmt.Sprintf("starting zenbot %s", zenbot.Version))
 
 	flag.Parse()
 	timeoutDuration, err := time.ParseDuration(*timeout)
