@@ -26,7 +26,7 @@ zenbot is a Slack bot that enforces "zen periods" for users, during which they a
 
 ## Usage
 
-1. add a **Slack Bot** integration: `https://team.slack.com/apps/A0F7YS25R-bots`. An avatar is available [here](/avatar.png).
+1. add a **Slack Bot** integration: `https://team.slack.com/apps/A0F7YS25R-bots`. an avatar is available [here](/avatar.png).
 2. invite `zenbot` to any existing channels and all future channels (this is a limitation of Slack's bot API, unfortunately)
 3. run `zenbot`. the following options are supported:
 
@@ -36,15 +36,13 @@ zenbot is a Slack bot that enforces "zen periods" for users, during which they a
 | `-debug=bool`     | no        | set debug mode                           | `false` |
 | `-timeout string` | no        | timeout between actions (karma downvotes) | `10s`   |
 
-In addition, see the table below for the options related to the web UI.
-
 **example:** `./zenbot -token xoxb-abcdefg`
 
 It is recommended to pass zenbot's logs through [humanlog](https://github.com/aybabtme/humanlog). humanlog will format and color the JSON output as nice easy-to-read text.
 
 ## Other
 
-A systemd service unit file is available [here](/zenbot.service). Edit the service file and replace `xoxb-abcdefg` with your Slack RTM token and install it as usual.
+A systemd service unit file is available [here](/zenbot.service). Edit the service file and replace `xoxb-abcdefg` with your Slack RTM token. Install it as usual.
 
 ## License
 
