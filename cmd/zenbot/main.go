@@ -12,14 +12,16 @@ import (
 )
 
 var (
-	token   = flag.String("token", "", "slack RTM token")
-	debug   = flag.Bool("debug", false, "toggle debug")
-	timeout = flag.String("timeout", "10s", "timeout between karma operations")
+	token            = flag.String("token", "", "slack RTM token")
+	debug            = flag.Bool("debug", false, "toggle debug")
+	timeout          = flag.String("timeout", "10s", "timeout between karma operations")
+	channelWhitelist = make(zenbot.StringList, 0)
 )
 
 func main() {
 	log.Info(fmt.Sprintf("starting zenbot %s", zenbot.Version))
 
+	flag.Var(&channelWhitelist, "whitelist.chan", "set a list of channels that zenbot may be used in")
 	flag.Parse()
 	timeoutDuration, err := time.ParseDuration(*timeout)
 	if err != nil {
@@ -34,14 +36,13 @@ func main() {
 
 	go sc.RTM.ManageConnection()
 
-	bot := &zenbot.Bot{
-		Config: &zenbot.Config{
-			Slack:           sc,
-			Log:             log.KV("zenbot", "true"),
-			Debug:           *debug,
-			TimeoutDuration: timeoutDuration,
-		},
-	}
+	bot := zenbot.New(&zenbot.Config{
+		Slack:            sc,
+		Log:              log.KV("zenbot", "true"),
+		Debug:            *debug,
+		TimeoutDuration:  timeoutDuration,
+		ChannelWhitelist: channelWhitelist,
+	})
 
 	bot.Zen()
 }

@@ -32,13 +32,14 @@ zenbot is a Slack bot that enforces "zen periods" for users, during which they a
 2. invite `zenbot` to any existing channels and all future channels (this is a limitation of Slack's bot API, unfortunately)
 3. run `zenbot`. the following options are supported:
 
-| option            | required? | description                              | default |
-| ----------------- | --------- | ---------------------------------------- | ------- |
-| `-token string`   | **yes**   | slack RTM token                          |         |
-| `-debug=bool`     | no        | set debug mode                           | `false` |
-| `-timeout string` | no        | timeout between actions (karma downvotes) | `10s`   |
+| option                   | required? | description                              | default |
+| ------------------------ | --------- | ---------------------------------------- | ------- |
+| `-token string`          | **yes**   | slack RTM token                          |         |
+| `-debug=bool`            | no        | set debug mode                           | `false` |
+| `-timeout string`        | no        | timeout between actions (karma downvotes) | `10s`   |
+| `-whitelist.chan string` | no        | **may be specified multiple times** set a list of channel that zenbot may be used in. | `[]`    |
 
-**example:** `./zenbot -token xoxb-abcdefg`
+**example:** `./zenbot -token xoxb-abcdefg -whitelist.chan zen -whitelist.chan zenbot-test `
 
 It is recommended to pass zenbot's logs through [humanlog](https://github.com/aybabtme/humanlog). humanlog will format and color the JSON output as nice easy-to-read text.
 

@@ -20,10 +20,11 @@ type Slack struct {
 // Config contains all the necessary configs for a
 // zenbot instance.
 type Config struct {
-	Slack           *Slack
-	Debug           bool
-	Log             *log.Log
-	TimeoutDuration time.Duration
+	Slack            *Slack
+	Debug            bool
+	Log              *log.Log
+	TimeoutDuration  time.Duration
+	ChannelWhitelist StringList
 }
 
 // A Zen is a zen time period for a user
@@ -34,9 +35,10 @@ type Zen struct {
 
 // A Bot is an instance of zenbot.
 type Bot struct {
-	Config    *Config
-	zens      []*Zen
-	zensMutex sync.RWMutex
+	Config       *Config
+	zens         []*Zen
+	zensMutex    sync.RWMutex
+	channelNames map[string]string
 }
 
 var regexps = struct {
@@ -45,6 +47,13 @@ var regexps = struct {
 	Zen:     regexp.MustCompile(`^\.\/zen`),
 	ZenArgs: regexp.MustCompile(`^\.\/zen +t?((?:\d+h)?(?:\d+m)?(?:\d+s)?)(?: (.*)?)$`),
 	Cancel:  regexp.MustCompile(`^\.\/zen cancel(?: (.*))?$`),
+}
+
+func New(config *Config) *Bot {
+	return &Bot{
+		Config:       config,
+		channelNames: make(map[string]string),
+	}
 }
 
 // Zen starts listening for Slack messages.
@@ -112,11 +121,33 @@ func (b *Bot) handleMessageEvent(ev *slack.MessageEvent) {
 
 	switch {
 	case regexps.Cancel.MatchString(ev.Text):
-		b.cancelZen(ev)
+		if b.isWhitelisted(ev) {
+			b.cancelZen(ev)
+		}
 	case regexps.Zen.MatchString(ev.Text):
-		b.startZen(ev)
+		if b.isWhitelisted(ev) {
+			b.startZen(ev)
+		}
 	default:
 	}
+}
+
+func (b *Bot) isWhitelisted(ev *slack.MessageEvent) bool {
+	if len(b.Config.ChannelWhitelist) == 0 {
+		return true
+	}
+
+	name, err := b.getChannelName(ev.Channel)
+	if err != nil {
+		b.Config.Log.KV("id", ev.Channel).Err(err).Error("could not look up channel name")
+		return false
+	}
+
+	_, whitelisted := b.Config.ChannelWhitelist[name]
+	if b.Config.Debug {
+		b.Config.Log.KV("channel", name).Info("channel is not whitelisted, command ignored")
+	}
+	return whitelisted
 }
 
 func (b *Bot) startZen(ev *slack.MessageEvent) {
@@ -260,4 +291,18 @@ func (b *Bot) getUserName(id string) (string, error) {
 	}
 
 	return userInfo.Name, nil
+}
+
+func (b *Bot) getChannelName(id string) (string, error) {
+	if name, ok := b.channelNames[id]; ok {
+		return name, nil
+	}
+
+	channelInfo, err := b.Config.Slack.Bot.GetChannelInfo(id)
+	if err != nil {
+		return "", err
+	}
+
+	b.channelNames[id] = channelInfo.Name
+	return channelInfo.Name, nil
 }
