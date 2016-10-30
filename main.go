@@ -164,7 +164,6 @@ func (b *Bot) cancelZen(ev *slack.MessageEvent) {
 	var (
 		reason  = match[1]
 		message = ""
-		name    = ""
 		count   = 0
 	)
 
@@ -172,9 +171,6 @@ func (b *Bot) cancelZen(ev *slack.MessageEvent) {
 	for i := 0; i < len(b.zens); i++ {
 		zen := b.zens[i]
 		if zen.User == ev.User && (reason == "" || strings.ToLower(zen.Reason) == strings.ToLower(reason)) {
-			// avoid an unnecessary lookup later on
-			name = zen.Name
-
 			b.zensMutex.RUnlock()
 
 			b.zensMutex.Lock()
@@ -200,7 +196,7 @@ func (b *Bot) cancelZen(ev *slack.MessageEvent) {
 	b.SendMessage(message, ev.Channel)
 
 	if count > 0 {
-		b.SendMessage(fmt.Sprintf("%s-%s for canceling %d zens.", name, strings.Repeat("-", count), count), ev.Channel)
+		b.SendMessage(fmt.Sprintf("<@%s>-%s for canceling %d zens.", ev.User, strings.Repeat("-", count), count), ev.Channel)
 	}
 
 }
@@ -212,7 +208,7 @@ func (b *Bot) enforceZen(user, activity string) {
 	for i := 0; i < len(b.zens); i++ {
 		zen := b.zens[i]
 		if zen.User == user && time.Now().After(zen.Timeout) {
-			b.SendMessage(fmt.Sprintf("%s-- for %s during your zen period (%s).", zen.Name, activity, zen.Reason), zen.Channel)
+			b.SendMessage(fmt.Sprintf("<@%s>-- for %s during your zen period (%s).", zen.User, activity, zen.Reason), zen.Channel)
 
 			b.zensMutex.RUnlock()
 			b.zensMutex.Lock()
@@ -245,7 +241,7 @@ func (b *Bot) ExpireZens() {
 					b.zens = append(b.zens[:i], b.zens[i+1:]...)
 					b.zensMutex.Unlock()
 
-					b.SendMessage(fmt.Sprintf("%s: Be free, for you zen (%s) has ended!", zen.Name, zen.Reason), zen.Channel)
+					b.SendMessage(fmt.Sprintf("<@%s>: Be free, for you zen (%s) has ended!", zen.User, zen.Reason), zen.Channel)
 
 					b.zensMutex.RLock()
 				}
