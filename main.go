@@ -138,7 +138,7 @@ func (b *Bot) startZen(ev *slack.MessageEvent) {
 		Channel: ev.Channel,
 		Reason:  reason,
 		EndsAt:  time.Now().Add(duration),
-		Timeout: time.Now(),
+		Timeout: time.Now().Add(5 * time.Second),
 	}
 
 	b.zensMutex.Lock()
