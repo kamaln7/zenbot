@@ -3,6 +3,7 @@ package zenbot
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -39,10 +40,11 @@ type Bot struct {
 }
 
 var regexps = struct {
-	Zen, ZenArgs *regexp.Regexp
+	Zen, ZenArgs, Cancel *regexp.Regexp
 }{
 	Zen:     regexp.MustCompile(`^\.\/zen`),
 	ZenArgs: regexp.MustCompile(`^\.\/zen +t?((?:\d+h)?(?:\d+m)?(?:\d+s)?)(?: (.*)?)$`),
+	Cancel:  regexp.MustCompile(`^\.\/zen cancel(?: (.*))?$`),
 }
 
 // Zen starts listening for Slack messages.
@@ -108,8 +110,12 @@ func (b *Bot) handleMessageEvent(ev *slack.MessageEvent) {
 		return
 	}
 
-	if regexps.Zen.MatchString(ev.Text) {
+	switch {
+	case regexps.Cancel.MatchString(ev.Text):
+		b.cancelZen(ev)
+	case regexps.Zen.MatchString(ev.Text):
 		b.startZen(ev)
+	default:
 	}
 }
 
@@ -148,14 +154,71 @@ func (b *Bot) startZen(ev *slack.MessageEvent) {
 	b.SendMessage(fmt.Sprintf("Added a zen for %s (%s), ends at [%s].", durationString, reason, zen.EndsAt), ev.Channel)
 }
 
+func (b *Bot) cancelZen(ev *slack.MessageEvent) {
+	match := regexps.Cancel.FindStringSubmatch(ev.Text)
+	if len(match) == 0 {
+		b.SendMessage("Usage: `./zen cancel [reason - optional]`", ev.Channel)
+		return
+	}
+
+	var (
+		reason  = match[1]
+		message = ""
+		name    = ""
+		count   = 0
+	)
+
+	b.zensMutex.RLock()
+	for i := 0; i < len(b.zens); i++ {
+		zen := b.zens[i]
+		if zen.User == ev.User && (reason == "" || strings.ToLower(zen.Reason) == strings.ToLower(reason)) {
+			// avoid an unnecessary lookup later on
+			name = zen.Name
+
+			b.zensMutex.RUnlock()
+
+			b.zensMutex.Lock()
+			b.zens = append(b.zens[:i], b.zens[i+1:]...)
+			i--
+			b.zensMutex.Unlock()
+
+			message += fmt.Sprintf("(%s) zen canceled.\n", zen.Reason)
+			count++
+
+			b.zensMutex.RLock()
+		}
+	}
+	b.zensMutex.RUnlock()
+
+	if message == "" {
+		if reason != "" {
+			message = "you do not have any such running zens"
+		} else {
+			message = "you do not have any running zens"
+		}
+	}
+	b.SendMessage(message, ev.Channel)
+
+	if count > 0 {
+		b.SendMessage(fmt.Sprintf("%s-%s for canceling %d zens.", name, strings.Repeat("-", count), count), ev.Channel)
+	}
+
+}
+
 func (b *Bot) enforceZen(user, activity string) {
 	b.zensMutex.RLock()
 	defer b.zensMutex.RUnlock()
 
-	for _, zen := range b.zens {
+	for i := 0; i < len(b.zens); i++ {
+		zen := b.zens[i]
 		if zen.User == user && time.Now().After(zen.Timeout) {
 			b.SendMessage(fmt.Sprintf("%s-- for %s during your zen period (%s).", zen.Name, activity, zen.Reason), zen.Channel)
+
+			b.zensMutex.RUnlock()
+			b.zensMutex.Lock()
 			zen.Timeout = time.Now().Add(b.Config.TimeoutDuration)
+			b.zensMutex.Unlock()
+			b.zensMutex.RLock()
 			break
 		}
 	}

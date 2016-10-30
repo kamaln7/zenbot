@@ -6,7 +6,9 @@ zenbot is a Slack bot that enforces "zen periods" for users, during which they a
 
 ## Syntax
 
-`./zen <duration e.g. 1h30m> [reason - optional]`
+- add a zen: `./zen <duration e.g. 1h30m> [reason - optional]`
+- cancel a zen: `./zen cancel [reason]`
+- cancel all zens: `./zen cancel`
 
 ## Installation
 
