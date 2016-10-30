@@ -15,7 +15,7 @@ zenbot is a Slack bot that enforces "zen periods" for users, during which they a
 ### Build from Source
 
 1. clone the repo:
-    1. `git clone -b v1.0.1 https://github.com/kamaln7/zenbot.git`
+    1. `git clone -b v1.1.0 https://github.com/kamaln7/zenbot.git`
 2. run `go get` and then `go build` inside `cmd/zenbot`
     1. `cd zenbot`
     2. `go get`
