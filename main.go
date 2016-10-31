@@ -174,7 +174,7 @@ func (b *Bot) startZen(ev *slack.MessageEvent) {
 		Name:    name,
 		Channel: ev.Channel,
 		Reason:  reason,
-		EndsAt:  time.Now().Add(duration),
+		EndsAt:  time.Now().Add(duration).Format("15:04:05 (_2 Jan, MST)"),
 		Timeout: time.Now().Add(5 * time.Second),
 	}
 
@@ -182,7 +182,7 @@ func (b *Bot) startZen(ev *slack.MessageEvent) {
 	b.zens = append(b.zens, zen)
 	b.zensMutex.Unlock()
 
-	b.SendMessage(fmt.Sprintf("Added a zen for %s (%s), ends at [%s].", durationString, reason, zen.EndsAt), ev.Channel)
+	b.SendMessage(fmt.Sprintf("Added a zen for %s (%s), ends at %s.", durationString, reason, zen.EndsAt), ev.Channel)
 }
 
 func (b *Bot) cancelZen(ev *slack.MessageEvent) {
