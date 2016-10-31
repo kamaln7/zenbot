@@ -272,7 +272,7 @@ func (b *Bot) ExpireZens() {
 					b.zens = append(b.zens[:i], b.zens[i+1:]...)
 					b.zensMutex.Unlock()
 
-					b.SendMessage(fmt.Sprintf("<@%s>: Be free, for you zen (%s) has ended!", zen.User, zen.Reason), zen.Channel)
+					b.SendMessage(fmt.Sprintf("<@%s>: Be free, for your zen (%s) has ended!", zen.User, zen.Reason), zen.Channel)
 
 					b.zensMutex.RLock()
 				}
